@@ -130,6 +130,10 @@ function fileshare_delete_form_wrapper($fileshare) {
 function fileshare_reply_form_wrapper($fileshare) {
   // Add the breadcrumb for the form's location.
   //fileshare_set_breadcrumb();
+
+  // Set the page title
+  drupal_set_title(t('Reply to message: %subject', array('%subject' => $fileshare->subject)), PASS_THROUGH);
+
   return drupal_get_form('fileshare_reply_form', $fileshare);
 }
 
