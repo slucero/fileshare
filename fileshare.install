@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function fileshare_schema() {
+  $schema = array();
+
+  $schema['fileshare'] = array(
+    'description' => 'The base table for fileshare entities.',
+    'fields' => array(
+      'fileshare_id' => array(
+        'description' => 'The primary identifier for a fileshare entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => 'The {fileshare_type}.type of this fileshare entity.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'sender' => array(
+        'description' => 'The {users}.uid that created this fileshare entity.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'recipient' => array(
+        'description' => 'The {users}.uid to whom this fileshare is being sent.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'subject' => array(
+        'description' => 'The name of the fileshare - a human-readable identifier.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'description' => 'A value indicating the send status of the bundle: 0 = sent, 1 = read.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'date_sent' => array(
+        'description' => 'The Unix timestamp when the bundle was sent.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'date_read' => array(
+        'description' => 'The Unix timestamp when the bundle was read.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data.',
+      ),
+    ),
+    'primary key' => array('fileshare_id'),
+    'indexes' => array(
+      'type' => array('type'),
+    ),
+    'foreign keys' => array(
+      'sender' => array(
+        'table' => 'users',
+        'columns' => array('sender' => 'uid'),
+      ),
+      'recipient' => array(
+        'table' => 'users',
+        'columns' => array('recipient' => 'uid'),
+      ),
+    )
+  );
+
+  $schema['fileshare_type'] = array(
+    'description' => 'Stores information about defined fileshare types.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The primary identifier of the fileshare type entity.',
+      ),
+      'type' => array(
+        'description' => 'The machine-readable name of this fileshare type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable name of this fileshare type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'The weight of this fileshare type in relation to others.',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data related to this fileshare type.',
+      ),
+    ) + entity_exportable_schema_fields(),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('type'),
+    ),
+  );
+
+  return $schema;
+}

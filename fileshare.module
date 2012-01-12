@@ -1,0 +1,603 @@
+<?php
+/**
+ * Implements hook_entity_info().
+ */
+function fileshare_entity_info() {
+  $entities['fileshare'] = array(
+    'label' => t('Fileshare'),
+    'entity class' => 'FileshareEntity',
+    'controller class' => 'FileshareController',
+    'views controller class' => 'EntityDefaultViewsController',
+    'base table' => 'fileshare',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'fileshare_id',
+      'bundle' => 'type',
+      'label' => 'subject',
+    ),
+    // Bundles are defined by the fileshare_type entity
+    'bundles' => array(),
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'creation callback' => 'fileshare_create',
+    'access callback' => 'fileshare_access',
+    'module' => 'fileshare',
+    'admin ui' => array(
+      'path' => 'admin/content/fileshare',
+      'file' => 'fileshare.admin.inc',
+      'controller class' => 'FileshareUIController',
+      'menu wildcard' => '%fileshare',
+    ),
+  );
+
+  // The entity that holds information about the fileshare entity types
+  $entities['fileshare_type'] = array(
+    'label' => t('Fileshare Type'),
+    'entity class' => 'FileshareTypeEntity',
+    'controller class' => 'FileshareTypeController',
+    'base table' => 'fileshare_type',
+    'fieldable' => FALSE,
+    'bundle of' => 'fileshare', 
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type',
+      'label' => 'label',
+    ),
+    'access callback' => 'fileshare_type_access',
+    'module' => 'fileshare',
+    'admin ui' => array(
+      'path' => 'admin/structure/fileshare_types',
+      'file' => 'fileshare_type.admin.inc',
+      'controller class' => 'FileshareTypeUIController',
+      //'menu wildcard' => '%fileshare_type',
+    ),
+  );
+
+  return $entities;
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ *
+ * We are adding the info about the fileshare types via a hook to avoid a recursion
+ * issue as loading the fileshare types requires the entity info as well.
+ *
+ * @todo This needs to be improved
+ */
+function fileshare_entity_info_alter(&$entity_info) {
+  foreach (fileshare_get_types() as $type => $info) {
+    $entity_info['fileshare']['bundles'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/structure/fileshare_types/manage/%fileshare_type',
+        'real path' => 'admin/structure/fileshare_types/manage/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer fileshare types'),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_entity_property_info_alter().
+ *
+ * Updating info about filehsare types outside of hook_entity_info to
+ * avoid a recursion issue caused by loading fileshare types which
+ * require entity info as well.
+ */
+function fileshare_entity_property_info_alter(&$entity_info) {
+  $properties = &$entity_info['fileshare']['properties'];
+
+  $properties['sender']['description'] = t('The sender of the fileshare bundle.');
+  $properties['sender']['type'] = 'user';
+  $properties['sender']['required'] = TRUE;
+  $properties['recipient']['description'] = t('The recipient of the fileshare bundle.');
+  $properties['recipient']['type'] = 'user';
+  $properties['recipient']['required'] = TRUE;
+  $properties['subject']['label'] = t('Subject');
+  $properties['subject']['description'] = t('The title of the fileshare bundle.');
+  $properties['status']['label'] = t('Status');
+  $properties['status']['description'] = t('The send and receipt status of the fileshare bundle.');
+  $properties['date_sent']['label'] = t(' Date sent');
+  $properties['date_sent']['description'] = t('The time the fileshare bundle was sent.');
+  $properties['date_sent']['type'] = 'date';
+  $properties['date_read']['label'] = t('Date read');
+  $properties['date_read']['description'] = t('The time the fileshare was read by the recipient.');
+  $properties['date_read']['type'] = 'date';
+}
+
+/**
+ * Implements hook_permission().
+ */
+function fileshare_permission() {
+  $permissions = array(
+    'administer fileshare types' => array(
+      'title' => t('Administer fileshare types'),
+      'description' => t('Create and delete fields for fileshare types, and set their permissions.'),
+    ),
+    'administer fileshares' => array(
+      'title' => t('Administer fileshare'),
+      'description' => t('Manage all fileshares in the system.'),
+    ),
+    'view fileshare logs' => array(
+      'title' => t('View fileshare logs'),
+      'description' => t('View the send/receive logs for the entire fileshare system.'),
+      'restrict access' => TRUE,
+    ),
+    'receive messages from anyone' => array(
+      'title' => t('Receive messages from anyone'),
+      'description' => t('Anyone with permissions to use the messaging system may send this person a message.
+        This user may be auto-suggested to all users sending a message.'),
+    ),
+    'send messages to anyone' => array(
+      'title' => t('Send messages to anyone'),
+      'description' => t('May send messages to anyone who may use the messaging system.'),
+    ),
+    'use fileshare system' => array(
+      'title' => t('Use fileshare system'),
+      'descripton' => t('May use the messaging system to send and receive messages.'),
+    ),
+  );
+
+  // Generate fileshare type-specific permissions
+  foreach (fileshare_get_types() as $type) {
+    $type_name = check_plain($type->type);
+    $permissions += array(
+      "create any $type_name fileshare" => array(
+        'title' => t('%type_name: Create any message', array('%type_name' => $type->label)),
+      ),
+    );
+  }
+
+  return $permissions;
+}
+
+/**
+ * A helper function to load all users with permissions to be suggested
+ * during message composition.
+ */
+function fileshare_get_suggested_users() {
+  if (user_access('send messages to anyone')) {
+    $roles = user_roles(TRUE, 'use fileshare system');
+  } else {
+    $roles = user_roles(TRUE, 'receive messages from anyone');
+  }
+
+  // Check that the permissions have been assigned
+  if (empty($roles)) {
+    return array();
+  }
+
+  // If authenticated user has permissions then load all active
+  // user accounts
+  if (array_search('authenticated user', $roles) !== FALSE) {
+    $query = 'SELECT uid, name
+      FROM {users} 
+      WHERE status = 1
+      ORDER BY name';
+    $result = db_query($query, array());
+  } else {
+    $query = 'SELECT DISTINCT(ur.uid), u.name
+      FROM {users_roles} AS ur
+      INNER JOIN {users} AS u ON ur.uid = u.uid
+      WHERE ur.rid IN (:rids)
+      ORDER BY u.name';
+    $result = db_query($query, array(':rids' => array_keys($roles)));
+  }
+
+  $users = $result->fetchAllKeyed();
+
+  return $users;
+}
+
+/**
+ * Determines whether the given user has access to a fileshare.
+ *
+ * @param $op
+ *   The operation being performed. One of 'view', 'create', or 'reply'
+ * @param $fileshare
+ *   Optionally a fileshare or a fileshare type to check access for. If nothing
+ *   is given, access for all fileshares is determined.
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ * @return boolean
+ *   Whether access is allowed or not.
+ */
+function fileshare_access($op, $fileshare = NULL, $account = NULL) {
+  global $user;
+
+  if (is_null($account)) {
+    $account = $user;
+  }
+
+  if (user_access('administer fileshares', $account)) {
+    return TRUE;
+  }
+
+  switch ($op) {
+    case 'view':
+      if (isset($fileshare) && in_array($account->uid, array($fileshare->sender, $fileshare->recipient))) {
+        return TRUE;
+      }
+      break;
+
+    case 'reply': 
+      if (isset($fileshare) && in_array($account->uid, array($fileshare->sender, $fileshare->recipient))) {
+        return TRUE;
+      }
+      break;
+
+    case 'create':
+      if (isset($fileshare) && $type_name = $fileshare->type) {
+        if (user_access("$op any $type_name fileshare", $account)) {
+          return TRUE;
+        }
+      }
+      break;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Access callback for the entity API.
+ */
+function fileshare_type_access($op, $type = NULL, $account = NULL) {
+  return user_access('administer fileshare types', $account);
+}
+
+/**
+ * Gets an array of all fileshare types, keyed by the type name.
+ *
+ * @param $type_name
+ *   If set, the type with the given name is returned.
+ * @return FileshareType[]
+ *   Depending whether $type isset, an array of fileshare types or a single one.
+ */
+function fileshare_get_types($type_name = NULL) {
+  // entity_load will get the Entity controller for our fileshare entity and call the load
+  // function of that object - we are loading entities by name here.
+  $types = entity_load_multiple_by_name('fileshare_type', isset($type_name) ? array($type_name) : FALSE);
+  return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Menu argument loader; Load a fileshare type by string.
+ *
+ * @param $type
+ *   The machine-readable name of a fileshare type to load.
+ * @return
+ *   A fileshare type array or FALSE if $type does not exist.
+ */
+function fileshare_type_load($type) {
+  return fileshare_get_types($type);
+}
+
+/**
+ * Fetch a fileshare object. Make sure that the wildcard you choose 
+ * in the fileshare entity definition fits the function name here.
+ *
+ * @param $fileshare_id
+ *   Integer specifying the fileshare id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $fileshare object or FALSE if it cannot be loaded.
+ *
+ * @see fileshare_load_multiple()
+ */
+function fileshare_load($fileshare_id, $reset = FALSE) {
+  $fileshares = fileshare_load_multiple(array($fileshare_id), array(), $reset);
+  return reset($fileshares);
+}
+
+/**
+ * Load multiple fileshares based on certain conditions.
+ *
+ * @param $fileshare_ids
+ *   An array of fileshare IDs.
+ * @param $conditions
+ *   An array of conditions to match against the {fileshare} table.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   An array of fileshare objects, indexed by fileshare_id.
+ *
+ * @see entity_load()
+ * @see fileshare_load()
+ */
+function fileshare_load_multiple($fileshare_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('fileshare', $fileshare_ids, $conditions, $reset);
+}
+
+
+/**
+ * Deletes a fileshare.
+ */
+function fileshare_delete(FileshareEntity $fileshare) {
+  $fileshare->delete();
+}
+
+
+/**
+ * Delete multiple fileshares.
+ *
+ * @param $fileshare_ids
+ *   An array of fileshare IDs.
+ */
+function fileshare_delete_multiple(array $fileshare_ids) {
+  entity_get_controller('fileshare')->delete($fileshare_ids);
+}
+
+
+/**
+ * Create a fileshare object.
+ */
+function fileshare_create($values = array()) {
+  return entity_get_controller('fileshare')->create($values);
+}
+
+
+/**
+ * Saves a fileshare to the database.
+ *
+ * @param $fileshare
+ *   The fileshare object.
+ */
+function fileshare_save(FileshareEntity $fileshare) {
+  if ($fileshare->is_new) {
+    global $user;
+    // Indicate the sender of the message
+    $fileshare->sender = $user->uid;
+
+    // Label as sent
+    $fileshare->status = 0;
+
+    // Send notificaton emails
+    fileshare_send_notifications($fileshare);
+  }
+
+  return $fileshare->save();
+}
+
+/**
+ * A helper function to send out notification emails.
+ */
+function fileshare_send_notifications($fileshare) {
+  $recipient = user_load($fileshare->recipient);
+
+  drupal_mail('fileshare', 'new message notification', $recipient->mail, 
+    user_preferred_language($recipient), array('fileshare' => $fileshare));
+
+  if (!empty($fileshare->data['cc'])) {
+    drupal_mail('fileshare', 'cc notification', implode(', ', $fileshare->data['cc']),
+      user_preferred_language($recipient), array('fileshare' => $fileshare));
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function fileshare_mail($key, &$message, $params) {
+  $fileshare = $params['fileshare'];
+  $sender = user_load($fileshare->sender);
+  $recipient = user_load($fileshare->recipient);
+  
+  switch ($key) {
+    case 'new message notification':
+      $message['subject'] = t(token_replace('You have a new message waiting at [site:name]'));
+      $message['body'][] = t(token_replace('Dear [user:name],', array('user' => $recipient)));
+      $message['body'][] = t(token_replace('You have a new message from [user:name] waiting for you in the client portal at [site:name].', array('user' => $sender)));
+      break;
+
+    case 'cc notification':
+      $message['subject'] = t(token_replace('You have been copied on a message to [user:name] at [site:name]', array('user' => $recipient)));
+      $message['body'][] = t('Hello,');
+      $message['body'][] = t(token_replace('You have been carbon copied on a message sent to [user:name] in the client portal at [site:name].', array('user' => $recipient)));
+      $message['body'][] = t(token_replace('In order to view this message you will need to log into your account for the client portal at [site:name] by entering
+        your account credentials at [site:login-url]. If you do not have an existing account please contact the site administrator ([site:mail]) to request one.'));
+      break;
+  }
+}
+
+
+/**
+ * Saves a fileshare type to the db.
+ */
+function fileshare_type_save(FileshareTypeEntity $type) {
+  $type->save();
+}
+
+
+/**
+ * Deletes a fileshare type from the db.
+ */
+function fileshare_type_delete(FileshareTypeEntity $type) {
+  $type->delete();
+}
+
+/**
+ * URI callback for fileshares
+ */
+function fileshare_uri(FileshareEntity $fileshare){
+  return array(
+    'path' => 'fileshare/' . $fileshare->fileshare_id,
+  );
+}
+
+/**
+ * Menu title callback for showing individual entities
+ */
+function fileshare_page_title(FileshareEntity $fileshare){
+  return $fileshare->subject;
+}
+
+/**
+ * Sets up content to show an individual fileshare
+ */
+function fileshare_page_view($fileshare, $view_mode = 'full') {
+  $controller = entity_get_controller('fileshare');
+  $content = $controller->view(array($fileshare->fileshare_id => $fileshare));
+  drupal_set_title($fileshare->subject);
+
+  return $content;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function fileshare_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'fileshare') . '/views',
+  );
+}
+
+
+/**
+ * Implement hook_theme().
+ */
+function fileshare_theme() {
+  return array(
+    'fileshare_add_list' => array(
+      'variables' => array('content' => array()),
+      'file' => 'fileshare.admin.inc',
+    ),
+    'fileshare' => array(
+      'render element' => 'elements',
+      'template' => 'fileshare',
+    ),
+  );
+}  
+
+/**
+ * Implements hook_entity_view().
+ *
+ * Used to set the read time if the message is being read by the recipient
+ * for the first time.
+ */
+function fileshare_entity_view($entity, $type, $view_mode, $langcode) {
+  global $user;
+
+  if ($type == 'fileshare' && $view_mode == 'default' && $entity->status == 0 && $entity->recipient == $user->uid) {
+    // Mark as read and indicate when
+    $entity->status = 1;
+    $entity->date_read = time();
+    $entity->save();
+  }
+}
+
+/**
+ * The class used for fileshare entities
+ */
+class FileshareEntity extends Entity {
+  
+  public function __construct($values = array()) {
+
+    parent::__construct($values, 'fileshare');
+  }
+
+  protected function defaultLabel() {
+    return $this->subject;
+  }
+
+  protected function defaultUri() {
+    return array('path' => '/messages/message/' . $this->fileshare_id);
+  }
+}
+
+/**
+ * The class used for fileshare type entities.
+ */
+class FileshareTypeEntity extends Entity {
+
+  public $type;
+  public $label;
+  
+  public function __construct($values = array()) {
+    parent::__construct($values, 'fileshare_type');
+  }
+}
+
+/** 
+ * The conroller for fileshare entities.
+ */
+class FileshareController extends EntityAPIController {
+
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
+  /**
+   * Create a fileshare - we first set up the values that are specific
+   * to our fileshare schema but then also go through the EntityAPIController
+   * function.
+   * 
+   * @param $type
+   *   The machine-readable type of the fileshare.
+   *
+   * @return
+   *   A fileshare object with all default fields initialized.
+   */
+  public function create(array $values = array()) {
+    // Add values that are specific to our fileshare
+    $values += array( 
+      'fileshare_id' => '',
+      'is_new' => TRUE,
+      'subject' => '',
+      'created' => '',
+      'sent' => '',
+      'read' => '',
+      'data' => '',
+    );
+    
+    $fileshare = parent::create($values);
+
+    return $fileshare;
+  }
+  
+  /**
+   * Overriding the buildContent function to add entity specific fields
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+
+    return $content;
+  }
+}
+
+/**
+ * The controller for fileshare type entities
+ */
+class FileshareTypeController extends EntityAPIControllerExportable {
+
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+  
+   /**
+   * Create a fileshare type - we first set up the values that are specific
+   * to our fileshare type schema but then also go through the EntityAPIController
+   * function.
+   * 
+   * @param $type
+   *   The machine-readable type of the fileshare.
+   *
+   * @return
+   *   A fileshare type object with all default fields initialized.
+   */
+  public function create(array $values = array()) {
+    // Add values that are specific to our fileshare
+    $values += array( 
+      'id' => '',
+      'is_new' => TRUE,
+      'data' => '',
+    );
+    $fileshare_type = parent::create($values);
+    return $fileshare_type;
+  }
+}

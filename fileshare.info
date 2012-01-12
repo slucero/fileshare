@@ -1,0 +1,20 @@
+name = Fileshare
+description = A module to facilitate a secure sharing process between users.
+core = 7.x
+package = Web International
+
+dependencies[] = entity
+
+files[] = fileshare.install
+files[] = fileshare.admin.inc
+files[] = fileshare_type.admin.inc
+
+
+files[] = views/fileshare.views.inc
+files[] = views/fileshare_handler_link_field.inc
+files[] = views/fileshare_handler_subject_field.inc
+files[] = views/fileshare_handler_status_field.inc
+files[] = views/fileshare_handler_delete_link_field.inc
+files[] = views/fileshare_handler_fileshare_operations_field.inc
+files[] = views/fileshare_handler_parties_involved_argument.inc
+files[] = views/fileshare_handler_inbox_argument.inc
