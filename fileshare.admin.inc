@@ -380,12 +380,16 @@ function fileshare_edit_form_submit(&$form, &$form_state) {
 
   $cc = explode(',', $form_state['values']['carbon']);
 
+  $copied = array();
   // Trim the whitespace from all entered email addresses
   foreach ($cc as $index=>$email) {
-    $cc[$index] = trim($email);
+    $email = trim($email);
+    if (!empty($email)) {
+      $copied[$index] = $email;
+    }
   }
 
-  $fileshare->data['cc'] = $cc;
+  $fileshare->data['cc'] = $copied;
 
   fileshare_save($fileshare);
 
