@@ -51,6 +51,16 @@ function fileshare_views_data_alter(&$data) {
       'handler' => 'fileshare_handler_parties_involved_argument',
     ),
   );
+  $data['fileshare']['user_involved'] = array(
+    'help' => t('All individuals involved in a fileshare message.'),
+    'argument' => array(
+      'title' => t('User Involved'),
+      'name table' => 'users',
+      'name field' => 'name',
+      'numeric' => TRUE,
+      'handler' => 'fileshare_handler_user_involved_argument',
+    ),
+  );
   $data['fileshare']['inbox'] = array(
     'help' => t('All messages that should be displayed in a user\'s inbox.'),
     'argument' => array(

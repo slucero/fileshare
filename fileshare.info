@@ -17,4 +17,5 @@ files[] = views/fileshare_handler_status_field.inc
 files[] = views/fileshare_handler_delete_link_field.inc
 files[] = views/fileshare_handler_fileshare_operations_field.inc
 files[] = views/fileshare_handler_parties_involved_argument.inc
+files[] = views/fileshare_handler_user_involved_argument.inc
 files[] = views/fileshare_handler_inbox_argument.inc
