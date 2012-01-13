@@ -264,7 +264,7 @@ function fileshare_edit_form($form, &$form_state, $fileshare, $op = 'edit') {
   // Build the recipient list
   $recipients = $suggested_users = fileshare_get_suggested_users();
   if (empty($suggested_users)) {
-    drupal_set_message('Permissions have not been set to allow any suggested users.');
+    drupal_set_message(t('Permissions have not been set to allow any suggested users.'));
   }
   
   // Create default field elements
@@ -347,7 +347,8 @@ function fileshare_edit_form_validate(&$form, &$form_state) {
     if (!user_access('use fileshare system', $recipient)) {
       form_set_error('recipient', t('@recipient cannot receive messages.', array('@recipient' => $recipient->name)));
     }
-  } else {
+  } 
+  else {
     form_set_error('recipient', t('Please enter a valid user to send the message to.'));
   }
 
@@ -386,7 +387,7 @@ function fileshare_edit_form_submit(&$form, &$form_state) {
 
   $copied = array();
   // Trim the whitespace from all entered email addresses
-  foreach ($cc as $index=>$email) {
+  foreach ($cc as $index => $email) {
     $email = trim($email);
     if (!empty($email)) {
       $copied[$index] = $email;
