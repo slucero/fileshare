@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * A views handler to provide general interactive operations with a fileshare as a field.
+ */
 
 /**
  * This field handler aggregates operations that can be done on a fileshare

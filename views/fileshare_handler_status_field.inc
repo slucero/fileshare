@@ -25,7 +25,8 @@ class fileshare_handler_status_field extends views_handler_field {
 
     if ($read) {
       $status = '<span class="read">' . t('Read') . '</span>';
-    } else {
+    } 
+    else {
       $status = '<span class="unread">' . t('Unread') . '</span>';
     }
 

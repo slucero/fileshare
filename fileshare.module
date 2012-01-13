@@ -102,7 +102,7 @@ function fileshare_entity_property_info_alter(&$entity_info) {
   $properties['subject']['description'] = t('The title of the fileshare bundle.');
   $properties['status']['label'] = t('Status');
   $properties['status']['description'] = t('The send and receipt status of the fileshare bundle.');
-  $properties['date_sent']['label'] = t(' Date sent');
+  $properties['date_sent']['label'] = t('Date sent');
   $properties['date_sent']['description'] = t('The time the fileshare bundle was sent.');
   $properties['date_sent']['type'] = 'date';
   $properties['date_read']['label'] = t('Date read');
@@ -163,7 +163,8 @@ function fileshare_permission() {
 function fileshare_get_suggested_users() {
   if (user_access('send messages to anyone')) {
     $roles = user_roles(TRUE, 'use fileshare system');
-  } else {
+  } 
+  else {
     $roles = user_roles(TRUE, 'receive messages from anyone');
   }
 
@@ -180,7 +181,8 @@ function fileshare_get_suggested_users() {
       WHERE status = 1
       ORDER BY name';
     $result = db_query($query, array());
-  } else {
+  } 
+  else {
     $query = 'SELECT DISTINCT(ur.uid), u.name
       FROM {users_roles} AS ur
       INNER JOIN {users} AS u ON ur.uid = u.uid
@@ -423,7 +425,7 @@ function fileshare_type_delete(FileshareTypeEntity $type) {
 /**
  * URI callback for fileshares
  */
-function fileshare_uri(FileshareEntity $fileshare){
+function fileshare_uri(FileshareEntity $fileshare) {
   return array(
     'path' => 'fileshare/' . $fileshare->fileshare_id,
   );
@@ -432,7 +434,7 @@ function fileshare_uri(FileshareEntity $fileshare){
 /**
  * Menu title callback for showing individual entities
  */
-function fileshare_page_title(FileshareEntity $fileshare){
+function fileshare_page_title(FileshareEntity $fileshare) {
   return $fileshare->subject;
 }
 
