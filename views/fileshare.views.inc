@@ -166,7 +166,8 @@ function fileshare_views_default_views() {
   $handler->display->display_options['header']['area']['field'] = 'area';
   $handler->display->display_options['header']['area']['label'] = 'Message Box Operations';
   $handler->display->display_options['header']['area']['empty'] = TRUE;
-  $handler->display->display_options['header']['area']['content'] = '<a href="/messages/compose" title="Compose a new message" alt="Compose a new message" class="button">Compose</a>';
+  $handler->display->display_options['header']['area']['content'] = '<a href="/messages/inbox" title="Back to inbox" alt="Back to inbox" class="button">Back to inbox</a>
+  <a href="/messages/compose" title="Compose a new message" alt="Compose a new message" class="button">Compose</a>';
   $handler->display->display_options['header']['area']['format'] = 'full_html';
   $handler->display->display_options['header']['area']['tokenize'] = 0;
   /* Footer: Global: Text area */
@@ -304,6 +305,16 @@ function fileshare_views_default_views() {
   $handler->display->display_options['title'] = 'Inbox';
   $handler->display->display_options['display_description'] = 'Display all messages sent to the current user.';
   $handler->display->display_options['defaults']['group_by'] = FALSE;
+  $handler->display->display_options['defaults']['header'] = FALSE;
+  /* Header: Global: Text area */
+  $handler->display->display_options['header']['area']['id'] = 'area';
+  $handler->display->display_options['header']['area']['table'] = 'views';
+  $handler->display->display_options['header']['area']['field'] = 'area';
+  $handler->display->display_options['header']['area']['label'] = 'Message Box Operations';
+  $handler->display->display_options['header']['area']['empty'] = TRUE;
+  $handler->display->display_options['header']['area']['content'] = '<a href="/messages/compose" title="Compose a new message" alt="Compose a new message" class="button">Compose</a>';
+  $handler->display->display_options['header']['area']['format'] = 'full_html';
+  $handler->display->display_options['header']['area']['tokenize'] = 0;
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Fileshare: Sender */
   $handler->display->display_options['relationships']['sender']['id'] = 'sender';
@@ -503,7 +514,7 @@ function fileshare_views_default_views() {
   $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Message Center';
   $handler->display->display_options['tab_options']['weight'] = '0';
-  $handler->display->display_options['tab_options']['name'] = 'menu-message-center';
+  $handler->display->display_options['tab_options']['name'] = 'menu-client-portal';
 
   /* Display: Sent */
   $handler = $view->new_display('page', 'Sent', 'sent');
@@ -661,7 +672,6 @@ function fileshare_views_default_views() {
   $handler->display->display_options['fields']['date_read']['element_label_colon'] = 0;
   $handler->display->display_options['fields']['date_read']['element_default_classes'] = 1;
   $handler->display->display_options['fields']['date_read']['hide_empty'] = 0;
-  $handler->display->display['fields']['date_read']['empty_zero'] = 0;
   $handler->display->display_options['fields']['date_read']['hide_alter_empty'] = 1;
   $handler->display->display_options['fields']['date_read']['date_format'] = 'short';
   /* Field: Fileshare: Operations links */
@@ -803,33 +813,6 @@ function fileshare_views_default_views() {
   $handler->display->display_options['fields']['status']['empty_zero'] = 0;
   $handler->display->display_options['fields']['status']['hide_alter_empty'] = 1;
   /* Field: User: Name */
-  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
-  $handler->display->display_options['fields']['name_1']['table'] = 'users';
-  $handler->display->display_options['fields']['name_1']['field'] = 'name';
-  $handler->display->display_options['fields']['name_1']['relationship'] = 'recipient';
-  $handler->display->display_options['fields']['name_1']['label'] = 'To';
-  $handler->display->display_options['fields']['name_1']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['make_link'] = 1;
-  $handler->display->display_options['fields']['name_1']['alter']['path'] = 'messages/filter/[recipient]';
-  $handler->display->display_options['fields']['name_1']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['trim_whitespace'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['name_1']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['name_1']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['name_1']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['name_1']['element_label_colon'] = 0;
-  $handler->display->display_options['fields']['name_1']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['name_1']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['name_1']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['name_1']['hide_alter_empty'] = 1;
-  $handler->display->display_options['fields']['name_1']['link_to_user'] = 0;
-  $handler->display->display_options['fields']['name_1']['overwrite_anonymous'] = 0;
-  $handler->display->display_options['fields']['name_1']['format_username'] = 1;
-  /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';
   $handler->display->display_options['fields']['name']['field'] = 'name';
@@ -856,6 +839,33 @@ function fileshare_views_default_views() {
   $handler->display->display_options['fields']['name']['link_to_user'] = 0;
   $handler->display->display_options['fields']['name']['overwrite_anonymous'] = 0;
   $handler->display->display_options['fields']['name']['format_username'] = 1;
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'users';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name_1']['relationship'] = 'recipient';
+  $handler->display->display_options['fields']['name_1']['label'] = 'To';
+  $handler->display->display_options['fields']['name_1']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['name_1']['alter']['path'] = 'messages/filter/[recipient]';
+  $handler->display->display_options['fields']['name_1']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['name_1']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['name_1']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['name_1']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['name_1']['element_label_colon'] = 0;
+  $handler->display->display_options['fields']['name_1']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['name_1']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['name_1']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['name_1']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['name_1']['link_to_user'] = 0;
+  $handler->display->display_options['fields']['name_1']['overwrite_anonymous'] = 0;
+  $handler->display->display_options['fields']['name_1']['format_username'] = 1;
   /* Field: Fileshare: Subject */
   $handler->display->display_options['fields']['subject']['id'] = 'subject';
   $handler->display->display_options['fields']['subject']['table'] = 'fileshare';
@@ -938,6 +948,17 @@ function fileshare_views_default_views() {
   $handler->display->display_options['arguments']['parties_involved']['validate']['type'] = 'user';
   $handler->display->display_options['arguments']['parties_involved']['validate_options']['restrict_roles'] = 0;
   $handler->display->display_options['arguments']['parties_involved']['validate']['fail'] = 'empty';
+  /* Contextual filter: Fileshare: User Involved */
+  $handler->display->display_options['arguments']['user_involved']['id'] = 'user_involved';
+  $handler->display->display_options['arguments']['user_involved']['table'] = 'fileshare';
+  $handler->display->display_options['arguments']['user_involved']['field'] = 'user_involved';
+  $handler->display->display_options['arguments']['user_involved']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['user_involved']['default_argument_type'] = 'php';
+  $handler->display->display_options['arguments']['user_involved']['default_argument_options']['code'] = 'global $user; return $user->uid;';
+  $handler->display->display_options['arguments']['user_involved']['default_argument_skip_url'] = 0;
+  $handler->display->display_options['arguments']['user_involved']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['user_involved']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['user_involved']['summary_options']['items_per_page'] = '25';
   $handler->display->display_options['defaults']['filters'] = FALSE;
   $handler->display->display_options['path'] = 'messages/filter';
   $handler->display->display_options['menu']['title'] = 'Filter';
