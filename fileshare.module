@@ -234,10 +234,8 @@ function fileshare_access($op, $fileshare = NULL, $account = NULL) {
       break;
 
     case 'create':
-      if (isset($fileshare) && $type_name = $fileshare->type) {
-        if (user_access("$op any $type_name fileshare", $account)) {
-          return TRUE;
-        }
+      if (user_access('use fileshare system', $account)) {
+        return TRUE;
       }
       break;
   }
