@@ -370,12 +370,20 @@ function fileshare_save(FileshareEntity $fileshare) {
 function fileshare_send_notifications($fileshare) {
   $recipient = user_load($fileshare->recipient);
 
-  drupal_mail('fileshare', 'new message notification', $recipient->mail, 
+  $mail  = drupal_mail('fileshare', 'new message notification', $recipient->mail, 
     user_preferred_language($recipient), array('fileshare' => $fileshare));
 
+	if (!empty($mail)) {
+		watchdog('fileshare', 'Message notification mailed to %name at %email.', array('%name' => $recipient->name, '%email' => $recipient->mail));	
+	}
+
   if (!empty($fileshare->data['cc'])) {
-    drupal_mail('fileshare', 'cc notification', implode(', ', $fileshare->data['cc']),
+    $cc = drupal_mail('fileshare', 'cc notification', implode(', ', $fileshare->data['cc']),
       user_preferred_language($recipient), array('fileshare' => $fileshare));
+
+		if (!empty($cc)) {
+			watchdog('fileshare', 'Message CC notifications mailed to: %email.', array('%email' => implode(', ', $fileshare->data['cc'])));	
+		}
   }
 }
 
