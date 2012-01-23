@@ -392,6 +392,8 @@ function fileshare_mail($key, &$message, $params) {
       $message['subject'] = t(token_replace('You have a new message waiting at [site:name]'));
       $message['body'][] = t(token_replace('Dear [user:name],', array('user' => $recipient)));
       $message['body'][] = t(token_replace('You have a new message from [user:name] waiting for you in the client portal at [site:name].', array('user' => $sender)));
+      $message['body'][] = t(token_replace('You may view this message on the [site:name] website at [site:url].'));
+      $message['body'][] = t(token_replace("Thank you,\n[site:name]\n[site:url]"));
       break;
 
     case 'cc notification':
@@ -399,8 +401,20 @@ function fileshare_mail($key, &$message, $params) {
       $message['body'][] = t('Hello,');
       $message['body'][] = t(token_replace('You have been carbon copied on a message sent to [user:name] in the client portal at [site:name].', array('user' => $recipient)));
       $message['body'][] = t(token_replace('In order to view this message you will need to log into your account for the client portal at [site:name] by entering
-        your account credentials at [site:login-url]. If you do not have an existing account please contact the site administrator ([site:mail]) to request one.'));
+        your account credentials at [site:login-url]. If you do not have an existing account you may request one on the website.'));
+      $message['body'][] = t(token_replace("Thank you,\n[site:name]\n[site:url]"));
       break;
+  }
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ *
+ * Alter the file extensions setting field of file fields to allow more extensions.
+ */
+function fileshare_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#field']['type'] == 'file') {
+    $form['instance']['settings']['file_extensions']['#maxlength'] = 300;
   }
 }
 

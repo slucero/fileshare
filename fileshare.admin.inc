@@ -409,7 +409,8 @@ function fileshare_edit_form_submit(&$form, &$form_state) {
 function fileshare_edit_form_build_entity($entity_type, &$entity, $form, &$form_state) {
   $recipient = user_load_by_name($form_state['values']['recipient']);
 
-  $entity->recipient = $recipient->uid;
+  // Suppressing error message to avoid errors when creating new entities
+  @$entity->recipient = $recipient->uid;
 }
 
 /**
