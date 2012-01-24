@@ -145,7 +145,7 @@ function fileshare_reply_form_wrapper($fileshare) {
 function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
   global $user;
 
-  $recipient = user_load($fileshare->recipient);
+  $recipient = user_load($fileshare->sender);
   $reply = fileshare_create(array(
     'sender' => $user->uid,
     'recipient' => $recipient->uid,
