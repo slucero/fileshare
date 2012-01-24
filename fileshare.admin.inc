@@ -152,6 +152,9 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
     'status' => 0,
     'subject' => 'Re: ' . $fileshare->subject, 
     'type' => $fileshare->type,
+		'data' => array(
+			'cc' => $fileshare->data['cc'],
+		),
   ));
 
   // Set the sender ID for new fileshares
@@ -182,6 +185,14 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
     '#title' => t('Subject'),
     '#type' => 'item',
     '#markup' => check_plain($reply->subject),
+  );
+
+  $form['carbon'] = array(
+    '#title' => t('CC'),
+    '#type' => 'textfield',
+    '#description' => t('Enter a comma-separated list of email addresses to receive notifications.<br/>
+      <strong>Note:</strong> The recipient must have an account to view any messages sent.'),
+		'#default_value' => $reply->data['cc'],
   );
 
   // Add field related form elements
@@ -221,6 +232,16 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
 function fileshare_reply_form_validate(&$form, &$form_state) {
   $fileshare = $form_state['fileshare'];
   
+  // Validate the Carbon Copy field
+  if (!empty($form_state['values']['carbon'])) {
+    $cc_array = explode(',', $form_state['values']['carbon']);
+    foreach ($cc_array as $email) {
+      if (!valid_email_address(trim($email))) {
+        form_set_error('carbon', t('%email is not a valid email address.', array('%email' => $email)));
+      }
+    }
+  }
+
   // Notify field widgets to validate their data.
   field_attach_form_validate('fileshare', $fileshare, $form, $form_state);
 }
@@ -240,6 +261,19 @@ function fileshare_reply_form_submit(&$form, &$form_state) {
 
   // Apply new read status
   $fileshare->status = 0;
+
+  $cc = explode(',', $form_state['values']['carbon']);
+
+  $copied = array();
+  // Trim the whitespace from all entered email addresses
+  foreach ($cc as $index => $email) {
+    $email = trim($email);
+    if (!empty($email)) {
+      $copied[$index] = $email;
+    }
+  }
+
+  $fileshare->data['cc'] = $copied;
 
   fileshare_save($fileshare);
   $form_state['redirect'] = 'messages/inbox';
