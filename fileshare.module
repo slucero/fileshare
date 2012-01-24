@@ -377,8 +377,6 @@ function fileshare_send_notifications($fileshare) {
 		watchdog('fileshare', 'Message notification mailed to %name at %email.', array('%name' => $recipient->name, '%email' => $recipient->mail));	
 	}
 
-	watchdog('fileshare', '<pre>' . print_r($fileshare, TRUE) . '</pre>', array(), WATCHDOG_DEBUG);
-
   if (!empty($fileshare->data['cc'])) {
     $cc = drupal_mail('fileshare', 'cc notification', implode(', ', $fileshare->data['cc']),
       user_preferred_language($recipient), array('fileshare' => $fileshare));
