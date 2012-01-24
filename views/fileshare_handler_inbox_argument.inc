@@ -17,7 +17,7 @@ class fileshare_handler_inbox_argument extends views_handler_argument {
 
     if (!empty($this->argument)) {
       $this->query->add_where('inbox_filter', "$this->table_alias.recipient", $this->argument);
-      $this->query->add_where('inbox_filter', "$this->table_alias.data", "%$account->mail%", 'LIKE');
+			$this->query->add_where_expression('inbox_filter', "LOWER(CONVERT($this->table_alias.data USING latin1)) LIKE :email", array(':email' => '%' . strtolower($account->mail) . '%'));
       $this->query->set_where_group('OR', 'inbox_filter');
     }
   }
