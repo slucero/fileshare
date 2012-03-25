@@ -164,7 +164,10 @@ function fileshare_install() {
     'field_name' => 'fileshare_body',
     'bundle' => 'secure_message',
     'label' => 'Body',
-    'widget_type' => 'text_textarea',
+    'widget' => array(
+      'type' => 'text_textarea',
+      'weight' => 5,
+    ),
     'settings' => array(),
     'display' => array(
       'default' => array(
@@ -182,7 +185,10 @@ function fileshare_install() {
     'field_name' => 'fileshare_attachment',
     'bundle' => 'secure_message',
     'label' => 'Attachments',
-    'widget_type' => 'file_generic',
+    'widget' => array(
+      'type' => 'file_generic',
+      'weight' => 10,
+    ),
     'settings' => array(),
     'display' => array(
       'default' => array(
