@@ -7,6 +7,9 @@
  */
 
 class fileshare_handler_status_field extends views_handler_field {
+  /**
+   * Construct the status field for use by Views.
+   */
   function construct() {
     parent::construct();
 
@@ -15,17 +18,23 @@ class fileshare_handler_status_field extends views_handler_field {
     $this->additional_fields['date_read'] = 'date_read';
   }
 
+  /**
+   * Ensure table and field presence in query.
+   */
   function query() {
     $this->ensure_my_table();
     $this->add_additional_fields();
   }
 
+  /**
+   * Render the field for use by Views.
+   */
   function render($values) {
     $read = $values->{$this->aliases['status']};
 
     if ($read) {
       $status = '<span class="read">' . t('Read') . '</span>';
-    } 
+    }
     else {
       $status = '<span class="unread">' . t('Unread') . '</span>';
     }

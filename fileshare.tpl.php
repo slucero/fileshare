@@ -1,12 +1,11 @@
 <?php
-
 /**
  * @file
  * A basic template for fileshare entities
  *
  * Available variables:
- * - $content: An array of comment items. Use render($content) to print them all, or
- *   print a subset such as render($content['field_example']). Use
+ * - $content: An array of comment items. Use render($content) to print them
+ *   all, or print a subset such as render($content['field_example']). Use
  *   hide($content['field_example']) to temporarily suppress the printing of a
  *   given element.
  * - $title: The subject of the fileshare
@@ -70,13 +69,11 @@ $recipient = user_load($fileshare->recipient);
         </tr>
       </table>
     </div>
-    <?php
-      print render($content);
-    ?>
+    <?php print render($content); ?>
     <?php if (fileshare_access('reply', $fileshare)): ?>
       <div class="fileshare-footer clearfix">
         <div class="actions">
-          <a href="/messages/message/<?php print $fileshare->fileshare_id; ?>/reply" class="button" 
+          <a href="/messages/message/<?php print $fileshare->fileshare_id; ?>/reply" class="button"
             alt="<?php print t('Reply to this message'); ?>" title="<?php print t('Reply to this message'); ?>">
             <?php print t('Reply'); ?>
           </a>

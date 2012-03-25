@@ -87,7 +87,7 @@ function fileshare_views_default_views() {
   $view->human_name = 'Message Center';
   $view->core = 7;
   $view->api_version = '3.0';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE;
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
@@ -979,7 +979,7 @@ function fileshare_views_default_views() {
   $view->human_name = 'Message Log';
   $view->core = 7;
   $view->api_version = '3.0';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE;
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');

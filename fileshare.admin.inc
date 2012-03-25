@@ -1,9 +1,7 @@
 <?php
-
 /**
  * @file
- * Fileshare editing UI
- *
+ * The Fileshare entity editing UI
  */
 
 /**
@@ -11,6 +9,9 @@
  */
 class FileshareUIController extends EntityDefaultUIController {
 
+  /**
+   * An overridable implementation of hook_menu().
+   */
   public function hook_menu() {
 
     $items = array();
@@ -93,6 +94,9 @@ class FileshareUIController extends EntityDefaultUIController {
 /**
  * Form callback wrapper: create or edit a fileshare.
  *
+ * Wrapper function implemented to allow customization of forms that may be
+ * needed.
+ *
  * @param $fileshare
  *   The fileshare object being edited by this form.
  *
@@ -108,6 +112,9 @@ function fileshare_form_wrapper($fileshare = NULL, $op = 'edit') {
 /**
  * Form callback wrapper: delete a fileshare.
  *
+ * Wrapper function implemented to allow customization of forms that may be
+ * needed.
+ *
  * @param $fileshare
  *   The fileshare object being edited by this form.
  *
@@ -121,6 +128,9 @@ function fileshare_delete_form_wrapper($fileshare) {
 
 /**
  * Form callback wrapper: reply to a fileshare.
+ *
+ * Wrapper function implemented to allow customization of forms that may be
+ * needed.
  *
  * @param $fileshare
  *   The fileshare object being edited by this form.
@@ -140,6 +150,8 @@ function fileshare_reply_form_wrapper($fileshare) {
 /**
  * Form callback function to reply to a fileshare.
  *
+ * @ingroup forms
+ *
  * @todo remove hardcoded links in submission buttons
  */
 function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
@@ -150,11 +162,11 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
     'sender' => $user->uid,
     'recipient' => $recipient->uid,
     'status' => 0,
-    'subject' => 'Re: ' . $fileshare->subject, 
+    'subject' => 'Re: ' . $fileshare->subject,
     'type' => $fileshare->type,
-		'data' => array(
-			'cc' => $fileshare->data['cc'],
-		),
+    'data' => array(
+      'cc' => $fileshare->data['cc'],
+    ),
   ));
 
   // Set the sender ID for new fileshares
@@ -164,7 +176,7 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
       '#value' => $reply->sender,
     );
   }
-  
+
   // Set reply values
   $form['recipient'] = array(
     '#type' => 'value',
@@ -192,7 +204,7 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
     '#type' => 'textfield',
     '#description' => t('Enter a comma-separated list of email addresses to receive notifications.<br/>
       <strong>Note:</strong> The recipient must have an account to view any messages sent.'),
-		'#default_value' => $reply->data['cc'],
+    '#default_value' => $reply->data['cc'],
   );
 
   // Add field related form elements
@@ -226,12 +238,14 @@ function fileshare_reply_form($form, &$form_state, $fileshare, $op = 'reply') {
 }
 
 /**
- * Form API validate callback for the fileshare reply form
- * @see fileshare_form().
+ * Form API validate callback for the fileshare reply form.
+ *
+ * @see fileshare_reply_form().
+ * @see fileshare_reply_form_submit().
  */
 function fileshare_reply_form_validate(&$form, &$form_state) {
   $fileshare = $form_state['fileshare'];
-  
+
   // Validate the Carbon Copy field
   if (!empty($form_state['values']['carbon'])) {
     $cc_array = explode(',', $form_state['values']['carbon']);
@@ -250,6 +264,7 @@ function fileshare_reply_form_validate(&$form, &$form_state) {
  * Form submit callback function for the fileshare reply form.
  *
  * @see fileshare_reply_form().
+ * @see fileshare_reply_form_validate().
  *
  * @todo remove hard-coded path
  */
@@ -282,6 +297,10 @@ function fileshare_reply_form_submit(&$form, &$form_state) {
 /**
  * Form callback function to create or edit a fileshare.
  *
+ * @see fileshare_edit_form_validate()
+ * @see fileshare_edit_form_submit()
+ * @ingroup forms
+ *
  * @todo remove hardcoded links in submission buttons
  */
 function fileshare_edit_form($form, &$form_state, $fileshare, $op = 'edit') {
@@ -300,18 +319,6 @@ function fileshare_edit_form($form, &$form_state, $fileshare, $op = 'edit') {
   if (empty($suggested_users)) {
     drupal_set_message(t('Permissions have not been set to allow any suggested users.'));
   }
-  
-  // Create default field elements
-  /*
-  $form['recipient'] = array(
-    '#title' => t('To'),
-    '#type' => 'textfield',
-    '#description' => t('Enter the name of the recipient.'),
-    '#autocomplete_path' => 'user/autocomplete',
-    '#maxlength' => 60,
-    //'#value_callback' => 'fileshare_field_recipient_value',
-  );
-   */
 
   $form['recipient'] = array(
     '#title' => t('To'),
@@ -371,7 +378,8 @@ function fileshare_edit_form($form, &$form_state, $fileshare, $op = 'edit') {
 /**
  * Form API validate callback for the fileshare form
  *
- * @see fileshare_edit_form().
+ * @see fileshare_edit_form()
+ * @see fileshare_edit_form_submit()
  */
 function fileshare_edit_form_validate(&$form, &$form_state) {
   $fileshare = $form_state['fileshare'];
@@ -381,7 +389,7 @@ function fileshare_edit_form_validate(&$form, &$form_state) {
     if (!user_access('use fileshare system', $recipient)) {
       form_set_error('recipient', t('@recipient cannot receive messages.', array('@recipient' => $recipient->name)));
     }
-  } 
+  }
   else {
     form_set_error('recipient', t('Please enter a valid user to send the message to.'));
   }
@@ -395,7 +403,7 @@ function fileshare_edit_form_validate(&$form, &$form_state) {
       }
     }
   }
-  
+
   // Notify field widgets to validate their data.
   field_attach_form_validate('fileshare', $fileshare, $form, $form_state);
 }
@@ -403,9 +411,10 @@ function fileshare_edit_form_validate(&$form, &$form_state) {
 /**
  * Form submit callback function for the fileshare form.
  *
- * @see fileshare_form().
+ * @see fileshare_edit_form()
+ * @see fileshare_edit_form_validate()
  *
- * @todo remove hard-coded path
+ * @todo remove hard-coded redirect path
  */
 function fileshare_edit_form_submit(&$form, &$form_state) {
   $fileshare = entity_ui_controller('fileshare')->entityFormSubmitBuildEntity($form, $form_state);
@@ -445,17 +454,6 @@ function fileshare_edit_form_build_entity($entity_type, &$entity, $form, &$form_
 
   // Suppressing error message to avoid errors when creating new entities
   @$entity->recipient = $recipient->uid;
-}
-
-/**
- *
- */
-function fileshare_field_recipient_value($element, $input = FALSE, $form_state) {
-  if ($input) {
-    $recipient = user_load_by_name($input);
-
-    return $recipient->uid;
-  }
 }
 
 /**
