@@ -4,6 +4,7 @@ core = 7.x
 package = Web International
 
 dependencies[] = entity
+dependencies[] = file
 
 files[] = fileshare.install
 files[] = fileshare.admin.inc

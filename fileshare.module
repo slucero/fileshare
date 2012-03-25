@@ -114,6 +114,20 @@ function fileshare_entity_property_info_alter(&$entity_info) {
 }
 
 /**
+ * Implements hook_default_YOUR_ENTITY_TYPE().
+ */
+function fileshare_default_fileshare_type() {
+  $types['secure_message'] = new FileshareTypeEntity(array(
+    'type' => 'secure_message',
+    'label' => 'Secure Message',
+    'weight' => '0',
+    'data' => '',
+  ));
+
+  return $types;
+}
+
+/**
  * Implements hook_permission().
  */
 function fileshare_permission() {
