@@ -1,12 +1,11 @@
 <?php
-
 /**
  * @file
- * Fileshare type editing UI.
+ * Fileshare Type editing UI.
  */
 
 /**
- * Fileshare type UI controller.
+ * Fileshare Type UI controller.
  */
 class FileshareTypeUIController extends EntityDefaultUIController {
 
@@ -23,9 +22,11 @@ class FileshareTypeUIController extends EntityDefaultUIController {
 
 /**
  * Form callback function for the fileshare type editing form.
+ *
+ * @see fileshare_type_form_submit()
+ * @ingroup forms
  */
 function fileshare_type_form($form, &$form_state, $fileshare_type, $op = 'edit') {
-  
   if ($op == 'clone') {
     $fileshare_type->label .= ' (cloned)';
     $fileshare_type->type = '';
@@ -65,6 +66,8 @@ function fileshare_type_form($form, &$form_state, $fileshare_type, $op = 'edit')
 
 /**
  * Form API submit callback for the fileshare type form.
+ *
+ * @see fileshare_type_form()
  */
 function fileshare_type_form_submit(&$form, &$form_state) {
   $fileshare_type = entity_ui_form_submit_build_entity($form, $form_state);
@@ -74,6 +77,8 @@ function fileshare_type_form_submit(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the fileshare type delete button.
+ *
+ * @see fileshare_type_form()
  */
 function fileshare_type_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/structure/fileshare_types/manage/' . $form_state['fileshare_type']->type . '/delete';

@@ -9,7 +9,6 @@ files[] = fileshare.install
 files[] = fileshare.admin.inc
 files[] = fileshare_type.admin.inc
 
-
 files[] = views/fileshare.views.inc
 files[] = views/fileshare_handler_link_field.inc
 files[] = views/fileshare_handler_subject_field.inc

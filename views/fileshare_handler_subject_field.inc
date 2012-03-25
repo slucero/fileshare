@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains a Views field handler to take care of displaying links to entities
@@ -7,6 +6,9 @@
  */
 
 class fileshare_handler_subject_field extends views_handler_field {
+  /**
+   * Construct the field for use by Views.
+   */
   function construct() {
     parent::construct();
 
@@ -15,6 +17,9 @@ class fileshare_handler_subject_field extends views_handler_field {
     $this->additional_fields['type'] = 'type';
   }
 
+  /**
+   * Define defaults for additional fields added to options form.
+   */
   function option_definition() {
     $options = parent::option_definition();
 
@@ -23,6 +28,9 @@ class fileshare_handler_subject_field extends views_handler_field {
     return $options;
   }
 
+  /**
+   * Add link option to field options form.
+   */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
@@ -33,11 +41,17 @@ class fileshare_handler_subject_field extends views_handler_field {
     );
   }
 
+  /**
+   * Ensure table and fields in query.
+   */
   function query() {
     $this->ensure_my_table();
     $this->add_additional_fields();
   }
 
+  /**
+   * Render the field for use by Views.
+   */
   function render($values) {
     $fileshare_id = $values->{$this->aliases['fileshare_id']};
     $subject = $values->{$this->aliases['subject']};

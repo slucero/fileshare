@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains a Views argument handler to take care of filter fileshares based
@@ -7,10 +6,10 @@
  */
 
 class fileshare_handler_user_involved_argument extends views_handler_argument {
-  function construct() {
-    parent::construct();
-  }
-
+  /**
+   * Ensure table presence in the query and alter the query as needed for the
+   * search.
+   */
   function query() {
     $this->ensure_my_table();
 
