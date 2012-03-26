@@ -2,6 +2,9 @@
 /**
  * @file
  * Defines general functionality for and interactions with the Fileshare entity.
+ *
+ * @todo Debug inbox and other Views pages.
+ * @todo Update default Views.
  */
 
 /**
