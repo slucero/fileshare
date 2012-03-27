@@ -3,6 +3,7 @@ description = A module to facilitate a secure sharing process between users.
 core = 7.x
 package = Web International
 
+dependencies[] = views
 dependencies[] = entity
 dependencies[] = file
 
@@ -10,6 +11,7 @@ files[] = fileshare.install
 files[] = fileshare.admin.inc
 files[] = fileshare_type.admin.inc
 
+files[] = views/fileshare.views_default.inc
 files[] = views/fileshare.views.inc
 files[] = views/fileshare_handler_link_field.inc
 files[] = views/fileshare_handler_subject_field.inc
